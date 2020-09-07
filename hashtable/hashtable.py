@@ -18,11 +18,12 @@ class HashTable:
     that accepts string keys
 
     Implement this.
-    """
+    """ 
 
     def __init__(self, capacity):
-        # Your code here
-
+        self.hash_table = [None] * capacity 
+        self.num_items = 0
+        self.capacity = capacity  
 
     def get_num_slots(self):
         """
@@ -34,8 +35,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
-
+        return len(self.hash_table)
 
     def get_load_factor(self):
         """
@@ -43,8 +43,8 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
 
+        return self.num_items / self.capacity
 
     def fnv1(self, key):
         """
@@ -64,6 +64,15 @@ class HashTable:
         """
         # Your code here
 
+    def utf(self, key):
+        string_utf = key.encode()
+
+        total = 0
+
+        for char in string_utf:
+            total += char
+            total &= 0xffffffff #limit total to 32 bits 
+        return total 
 
     def hash_index(self, key):
         """
@@ -71,7 +80,8 @@ class HashTable:
         between within the storage capacity of the hash table.
         """
         #return self.fnv1(key) % self.capacity
-        return self.djb2(key) % self.capacity
+        #return self.djb2(key) % self.capacity
+        return self.utf(key) % self.capacity
 
     def put(self, key, value):
         """
@@ -81,9 +91,39 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        i = self.hash_index(key)
 
+        #find the start of the linked list using the index
+        self.hash_table[i]
 
+        #insert into this linked list a new hash table entry
+        if self.hash_table[i] is None:
+            e = HashTableEntry(key, value)
+            self.hash_table[i] = e
+            self.num_items =  self.num_items + 1
+
+        else:
+            # iterate over linked list and search to see if key already exists  
+            cur_node = self.hash_table[i]
+            while cur_node != None:
+                if cur_node.key == key:
+                    cur_node.value = value 
+                    break
+                else:
+                    cur_node = cur_node.next 
+
+            # we are at the end of the list, which means we ahve not found the key in the list
+            if cur_node == None:
+
+                # we need to create a new entry
+                e = HashTableEntry(key, value)
+
+                # now we need to choose where to add the new
+                e.next = self.hash_table[i]
+                self.hash_table[i] = e
+
+                self.num_items =  self.num_items + 1
+    
     def delete(self, key):
         """
         Remove the value stored with the given key.
@@ -92,8 +132,32 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        #hash the key and get an index
+        i = self.hash_index(key)
+        # self.hash_table[i] = None
 
+        #search through the linked list for the matching key
+        cur_node = self.hash_table[i]
+        prev_node = None
+        while cur_node != None:
+            if cur_node.key == key:
+                # DELETE HERE: previous to point to next
+                if prev_node != None:
+                    prev_node.next = cur_node.next
+                else:
+                    self.hash_table[i] = cur_node.next
+
+                # keep track of nmber of items
+                self.num_items = self.num_items -1
+
+                # RETURN THE DELETE VALUE  
+                return cur_node.value
+
+            else:
+                prev_node = cur_node
+                cur_node = cur_node.next
+
+        return None
 
     def get(self, key):
         """
@@ -103,7 +167,19 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        #hash the key and get index
+        i = self.hash_index(key)
+        #get the linked list at the computed index
+        cur_node = self.hash_table[i]
+        #search through the linked list for the key, compare keys until you find the right one
+        #if it exists, return the value
+        #else, return None 
+        while cur_node != None:
+            if cur_node.key == key:
+                return cur_node.value
+            else:
+                cur_node = cur_node.next
+        return None  
 
 
     def resize(self, new_capacity):
@@ -113,7 +189,21 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        #make a new arrary that doubles the current size (duplicate array)
+        old_capacity = self.capacity
+        self.capacity = new_capacity
+
+        old_table = self.hash_table
+        self.hash_table = [None] * self.capacity
+
+        #go through each linked list in the array
+        
+        for i in range(old_capacity):
+            #go through each item and rehash it b/c with bigger array the index will be different
+            cur_node = old_table[i]
+            while cur_node != None:
+                self.put(cur_node.key, cur_node.value)
+                cur_node = cur_node.next
 
 
 
