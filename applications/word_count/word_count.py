@@ -1,7 +1,19 @@
-def word_count(s):
-    # Your code here
 
+def word_count(x):
+    wordFreq = {}
+    lower = x.lower()
+    bad_chars = ['"',  ":", ";", ",", ".", "-", "+", "=", "/", "\\", "|", "[", ']', '{', '}', '(', ')', '*', '^', '&']
+    for i in bad_chars:
+        lower = lower.replace(i, '') 
+    list_words = lower.split()
+    for word in list_words:
+        if word not in wordFreq:
+            wordFreq[word] = 1
+        else:
+            wordFreq[word] += 1
 
+    return wordFreq
+    
 
 if __name__ == "__main__":
     print(word_count(""))
